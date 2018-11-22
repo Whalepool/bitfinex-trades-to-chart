@@ -15,6 +15,7 @@ As you make trades, the script will add them to your tradingview chart on bitfin
 ### Features  
   
 - Plot different sized 'dots' on the chart where larger/smaller orders took place
+- On WS connect, historical trades are loaded
 
 ### Issues  
   
@@ -22,9 +23,8 @@ As you make trades, the script will add them to your tradingview chart on bitfin
   
 ### Todo 
 
-- Pass argment to disable clearing of historical markers, ie `node run.js --no-clear` for example  
+- Pass argment to specify just a specific pair, ie, `node run.js BTCUSD`  
 - If bitfinex would allow the 'updating' of existing markers, they could grow as more of a trade is executed at a price, ie,  0.1 btc is sold at price X, market is 1 pixel, then 1 btc is sold at the same price from the same order, so the dot pixel 'grows' in size  
-- On WS connect, request historical 200 last trades, build trade cache/memory etc, plot historical on launch  
 - 'dot' size could be caculated from a percentile of all the other trades in memory, so, is this a large amount of small amount relative to the last trade memory/cache etc
 
 ### Credits  
