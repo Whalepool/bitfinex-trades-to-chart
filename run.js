@@ -1,7 +1,14 @@
 const BFX = require('bitfinex-api-node');
+const fs = require('fs')
 const args = process.argv
 let nextMarkId = 0;
 
+try {
+  conf = JSON.parse(fs.readFileSync(`${__dirname}/config.json`, 'utf8'))
+} catch (e) {
+  console.log('config.json file not found or unable to json.parse file contensts')
+  process.exit(-1)
+}
 
 function addMark(wss, opts) {
   opts.type = 'marker_create';
@@ -17,11 +24,26 @@ function clearMarks(wss) {
     type: 'marker_clear',
   } }]);
 }
+function procesTrade(wss, trade) {
+  // Is amount greater than zero
+  const isBuy = trade[4] > 0;
+  const markColour = isBuy ? '#11FF33': '#FF1133';
+  const markSize = Math.abs(trade[4]) > 15 ? 15 : Math.round(Math.abs(trade[4]) + 1);
+
+  addMark(wss, {
+    ts: trade[2],
+    // Adding a 'symbol' does not work'
+    // symbol: opts[1].slice(1),
+    content: `Trade id ${trade[0]}`, // content to show in tooltip
+    color_bg: markColour,
+    size_min: markSize,
+  });
+}
 
 
 const bfx = new BFX({
-  apiKey: '',
-  apiSecret: '',
+  apiKey: conf.apiKey,
+  apiSecret: conf.apiSecret,
 
   ws: {
     autoReconnect: true,
@@ -62,24 +84,8 @@ ws.once('auth', () => {
     rest.accountTrades('tBTCUSD', START, END, LIMIT).then(trades => {
 
        let t
-
        for (let j = 0; j < trades.length; j += 1) {
-         opts = trades[j]
-
-         // Is amount greater than zero
-         const isBuy = opts[4] > 0;
-         const markColour = isBuy ? '#11FF33': '#FF1133';
-         const markSize = Math.abs(opts[4]) > 15 ? 15 : Math.round(Math.abs(opts[4]) + 1);
-
-
-        addMark(ws, {
-          ts: opts[2],
-          // Adding a 'symbol' does not work'
-          // symbol: opts[1].slice(1),
-          content: `Trade id ${opts[0]}`, // content to show in tooltip
-          color_bg: markColour,
-          size_min: markSize,
-        });
+         procesTrade(ws, trades[j])
        }
 
        console.log('Finished adding order history markers')
@@ -108,23 +114,7 @@ ws.once('auth', () => {
 ws.onAccountTradeUpdate({}, (trade) => {
   console.log('onAccountTradeUpdate')
   console.log(trade)
-
-  // Is amount greater than zero
-  const isBuy = trade[4] > 0;
-  const markColour = isBuy ? '#11FF33': '#FF1133';
-  const markSize = Math.abs(trade[4]) > 15 ? 15 : Math.round(Math.abs(trade[4]) + 1);
-
-  console.log('adding marker... ')
-
-  addMark(ws, {
-    ts: trade[2],
-    // Adding a 'symbol' does not work'
-    // symbol: opts[1].slice(1),
-    content: `Trade id ${trade[0]}`, // content to show in tooltip
-    color_bg: markColour,
-    size_min: markSize,
-  });
-
+  procesTrade(ws, trade)
 })
 
 

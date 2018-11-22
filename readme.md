@@ -6,6 +6,10 @@ This is a simple prototype idea script you can run on an empty screen somewhere 
 
 ### To Run   
 
+- Populate config.json with your API key/secret combo:
+```
+cp config.sample.json config.json
+```
 - Enter your api key/secret into run.js
 - run, `node run.js`   
 
